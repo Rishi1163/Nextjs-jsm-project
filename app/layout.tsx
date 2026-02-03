@@ -3,6 +3,8 @@ import { Schibsted_Grotesk, Martian_Mono } from "next/font/google";
 import "./globals.css";
 import Aurora from '../components/Aurora';
 import Navbar from "@/components/Navbar";
+import PHProvider from "./providers/PostHogProvider";
+import PostHogPageView from "./providers/PostHogPageView";
 
 const schibstedGrotesk = Schibsted_Grotesk({
   variable: "--font-schibsted-grotesk",
@@ -30,7 +32,7 @@ export default function RootLayout({
         className={`${schibstedGrotesk.variable} ${martianMono.variable} min-h-screen antialiased`}
       >
       <Navbar />
-      <div className={`absolute inset-0 top-0 z-[-1] min-h-screen`}>
+      <div className={`absolute inset-0 top-0 z-0 min-h-screen`}>
           <Aurora
               colorStops={["#7C7CFF","#22D3EE","#A855F7"]}
               blend={0.5}
@@ -39,7 +41,10 @@ export default function RootLayout({
           />
       </div>
         <main className={`relative z-10`}>
-            {children}
+            <PHProvider>
+                <PostHogPageView />
+                {children}
+            </PHProvider>
         </main>
       </body>
     </html>

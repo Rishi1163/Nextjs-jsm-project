@@ -17,7 +17,7 @@ export interface IEvent extends Document {
     organizer: string,
     tags: string[],
     createdAt: Date,
-    updateAt: Date
+    updatedAt: Date
 }
 
 const EventSchema = new Schema<IEvent> (

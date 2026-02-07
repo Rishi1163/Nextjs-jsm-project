@@ -20,72 +20,76 @@ export interface IEvent extends Document {
     updatedAt: Date
 }
 
-const EventSchema = new Schema<IEvent> (
+const EventSchema = new Schema<IEvent>(
     {
         title: {
             type: String,
-            required : [true, "Title is required"],
+            required: [true, "Title is required"],
             trim: true,
             maxLength: [100, "Title cannot exceed 100 characters"]
         },
         slug: {
             type: String,
-            trim : true,
+            trim: true,
             unique: true,
             lowercase: true,
         },
         description: {
             type: String,
-            required : [true, "Description is required"],
+            required: [true, "Description is required"],
             trim: true,
             maxLength: [1000, "Description cannot exceed 100 characters"]
         },
         overview: {
             type: String,
-            required : [true, "Overview is required"],
+            required: [true, "Overview is required"],
             trim: true,
             maxLength: [500, "Overview cannot exceed 100 characters"]
         },
         image: {
             type: String,
-            required : [true, "Image Url is required"],
+            required: true,
             trim: true,
+            validate: {
+                validator: (v: string) => v.length > 0,
+                message: "Image URL cannot be empty",
+            },
         },
         venue: {
             type: String,
-            required : [true, "Venuew is required"],
+            required: [true, "Venuew is required"],
             trim: true,
         },
         location: {
             type: String,
-            required : [true, "location is required"],
+            required: [true, "location is required"],
             trim: true,
         },
         date: {
             type: String,
-            required : [true, "date is required"],
+            required: [true, "date is required"],
         },
         time: {
             type: String,
-            required : [true, "Time is required"],
+            required: [true, "Time is required"],
         },
         mode: {
             type: String,
-            required : [true, "Title is required"],
-            enum : {
+            required: [true, "Title is required"],
+            enum: {
                 values: ['online', 'offline', 'hybrid'],
                 message: "Mode must be either online, offline, or hybrid"
             },
         },
         audience: {
             type: String,
-            required : [true, "Title is required"],
+            required: [true, "Title is required"],
             trim: true,
         },
         agenda: {
             type: [String],
-            required : [true, "Title is required"],
-            validate : {
+            required: [true, "Title is required"],
+            validate: {
                 validator: (v: string[]) => v.length > 0,
                 message: "At least one agenda item is required"
             }
@@ -124,20 +128,26 @@ EventSchema.pre('save', function () {
     if (event.isModified('time')) {
         event.time = normalizeTime(event.time);
     }
+
+    if (event.isModified('tags')) {
+        event.tags = event.tags.map(tag =>
+            tag.toLowerCase().trim()
+        )
+    }
 });
 
 function generateSlug(title: string): string {
     return title
-    .toLowerCase()
-    .trim()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/^-|-$/g, '')
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/^-|-$/g, '')
 }
 
 function normalizeDate(dateString: string): string {
     const date = new Date(dateString)
-    if(isNaN(date.getTime())) {
+    if (isNaN(date.getTime())) {
         throw new Error('Invalid date format')
     }
     return date.toISOString().split('T')[0]
@@ -147,7 +157,7 @@ function normalizeTime(timeString: string): string {
     const timeRegex = /^(\d{1,2}):(\d{2})(\s*(AM|PM))?$/i;
     const match = timeString.trim().match(timeRegex)
 
-    if(!match) {
+    if (!match) {
         throw new Error("Invalid time format. Use HH:MM AM/PM")
     }
 
@@ -155,20 +165,20 @@ function normalizeTime(timeString: string): string {
     const minutes = match[2];
     const period = match[4]?.toUpperCase();
 
-    if(period) {
-        if(period === "PM" && hours !== 12) hours += 12;
-        if(period === "AM" && hours === 12) hours = 0;
+    if (period) {
+        if (period === "PM" && hours !== 12) hours += 12;
+        if (period === "AM" && hours === 12) hours = 0;
     }
 
-    if(hours < 0 || hours > 23 || parseInt(minutes) < 0 || parseInt(minutes) > 59) {
+    if (hours < 0 || hours > 23 || parseInt(minutes) < 0 || parseInt(minutes) > 59) {
         throw new Error("Invalid time values")
     }
     return `${hours.toString().padStart(2, '0')}:${minutes}`
 }
 
-EventSchema.index({slug: 1}, {unique: true});
+EventSchema.index({ slug: 1 }, { unique: true });
 
-EventSchema.index({date: 1, mode: 1});
+EventSchema.index({ date: 1, mode: 1 });
 
 const Event = models.Event || model<IEvent>('Event', EventSchema);
 

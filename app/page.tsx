@@ -11,8 +11,7 @@ const Page = async () => {
     const data: { events: IEvent[] } = await response.json();
 
     const parsedEvents = data.events.map((event) => ({
-        ...event,
-        date: new Date(event.date),
+        ...event
     }));
 
     return (

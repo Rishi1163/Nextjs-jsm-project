@@ -1,4 +1,7 @@
 import BookEvent from "@/components/BookEvent"
+import EventCard from "@/components/EventCard"
+import { IEvent } from "@/database"
+import { getSimilarEventsBySlug } from "@/lib/actions/event.actions"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 
@@ -22,7 +25,7 @@ const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
   </div>
 )
 
-const EventTags = ({tags}: {tags: string[]}) => (
+const EventTags = ({ tags }: { tags: string[] }) => (
   <div className="flex flex-row gap-1.5 flex-wrap">
     {tags.map((tag) => (
       <div className="pill" key={tag}>
@@ -40,29 +43,31 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> 
 
   if (!description) return notFound()
 
-  let parsedAgenda: string[] = [];
-  try {
-    parsedAgenda = Array.isArray(agenda)
-      ? typeof agenda[0] === "string" && agenda.length === 1
-        ? JSON.parse(agenda[0])
-        : agenda
-      : [];
-  } catch {
-    parsedAgenda = [];
-  }
+  // let parsedAgenda: string[] = [];
+  // try {
+  //   parsedAgenda = Array.isArray(agenda)
+  //     ? typeof agenda[0] === "string" && agenda.length === 1
+  //       ? JSON.parse(agenda[0])
+  //       : agenda
+  //     : [];
+  // } catch {
+  //   parsedAgenda = [];
+  // }
 
-  let parsedTags: string[] = [];
-  try {
-    parsedTags = Array.isArray(tags)
-      ? typeof tags[0] === "string" && tags.length === 1
-        ? JSON.parse(tags[0])
-        : tags
-      : [];
-  } catch {
-    parsedTags = [];
-  }
+  // let parsedTags: string[] = [];
+  // try {
+  //   parsedTags = Array.isArray(tags)
+  //     ? typeof tags[0] === "string" && tags.length === 1
+  //       ? JSON.parse(tags[0])
+  //       : tags
+  //     : [];
+  // } catch {
+  //   parsedTags = [];
+  // }
 
   const bookings = 10
+
+  const similarEvents: IEvent[] = await getSimilarEventsBySlug(slug)
 
   return (
     <section id="event">
@@ -88,28 +93,37 @@ const EventDetailsPage = async ({ params }: { params: Promise<{ slug: string }> 
             <EventdetailItem icon="../icons/audience.svg" alt="audience" label={audience} />
           </section>
 
-          <EventAgenda agendaItems={parsedAgenda} />
+          <EventAgenda agendaItems={agenda} />
 
-           <section className="flex-col-gap-2">
+          <section className="flex-col-gap-2">
             <h2>About the Organizer</h2>
             <p>{organizer}</p>
 
             <p>{overview}</p>
           </section>
 
-          <EventTags tags={parsedTags}/>
+          <EventTags tags={tags} />
         </div>
         <aside className="booking">
           <div className="signup-card">
             <h2>Book Your Spot</h2>
-            {bookings > 0 ? 
-            <p className="text-sm">Join {bookings} people who have already booked their spot</p>
-            :
-            <p className="text-sm">Be the 1st to book your spot</p>
+            {bookings > 0 ?
+              <p className="text-sm">Join {bookings} people who have already booked their spot</p>
+              :
+              <p className="text-sm">Be the 1st to book your spot</p>
             }
             <BookEvent />
           </div>
         </aside>
+      </div>
+
+      <div className="flex w-full flex-col gap-4 pt-20">
+        <h2>Similar Events</h2>
+        <div className="events">
+          {similarEvents.map((similarEvent: IEvent) => (
+            <EventCard key={similarEvent._id} {...similarEvent} />
+          ))}
+        </div>
       </div>
     </section>
   )

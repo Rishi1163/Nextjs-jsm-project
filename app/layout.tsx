@@ -5,6 +5,7 @@ import Aurora from '../components/Aurora';
 import Navbar from "@/components/Navbar";
 import PHProvider from "./providers/PostHogProvider";
 import PostHogPageView from "./providers/PostHogPageView";
+import { Suspense } from "react";
 
 const schibstedGrotesk = Schibsted_Grotesk({
   variable: "--font-schibsted-grotesk",
@@ -31,20 +32,22 @@ export default function RootLayout({
       <body
         className={`${schibstedGrotesk.variable} ${martianMono.variable} min-h-screen antialiased`}
       >
-      <Navbar />
-      <div className={`absolute inset-0 top-0 z-0 min-h-screen`}>
+        <Navbar />
+        <div className={`absolute inset-0 top-0 z-0 min-h-screen`}>
           <Aurora
-              colorStops={["#7C7CFF","#22D3EE","#A855F7"]}
-              blend={0.5}
-              amplitude={1.0}
-              speed={0.8}
+            colorStops={["#7C7CFF", "#22D3EE", "#A855F7"]}
+            blend={0.5}
+            amplitude={1.0}
+            speed={0.8}
           />
-      </div>
+        </div>
         <main className={`relative z-10`}>
-            <PHProvider>
-                <PostHogPageView />
-                {children}
-            </PHProvider>
+          <PHProvider>
+            <Suspense fallback={null}>
+              <PostHogPageView />
+            </Suspense>
+            {children}
+          </PHProvider>
         </main>
       </body>
     </html>
